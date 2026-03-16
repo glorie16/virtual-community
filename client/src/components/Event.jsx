@@ -1,62 +1,45 @@
-import React, { useState, useEffect } from 'react'
-import '../css/Event.css'
+import React, { useState, useEffect } from 'react';
+import '../css/Event.css';
 
-const Event = (props) => {
+const Event = ({ id, title, date, time, image }) => {
+  const [formattedTime, setFormattedTime] = useState('');
 
-    const [event, setEvent] = useState([])
-    const [time, setTime] = useState([])
-    const [remaining, setRemaining] = useState([])
+  // Format the time to a readable string
+  useEffect(() => {
+    if (time) {
+      const [hours, minutes] = time.split(':'); // assuming "HH:MM:SS"
+      const dateObj = new Date();
+      dateObj.setHours(Number(hours));
+      dateObj.setMinutes(Number(minutes));
+      dateObj.setSeconds(0);
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const eventData = await EventsAPI.getEventsById(props.id)
-                setEvent(eventData)
-            }
-            catch (error) {
-                throw error
-            }
-        }) ()
-    }, [])
+      const options = { hour: '2-digit', minute: '2-digit', hour12: true };
+      setFormattedTime(dateObj.toLocaleTimeString([], options));
+    }
+  }, [time]);
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const result = await dates.formatTime(event.time)
-                setTime(result)
-            }
-            catch (error) {
-                throw error
-            }
-        }) ()
-    }, [event])
+  // Format the date nicely without the "Z"
+  const formattedDate = date
+    ? new Date(date).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      })
+    : '';
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const timeRemaining = await dates.formatRemainingTime(event.remaining)
-                setRemaining(timeRemaining)
-                dates.formatNegativeTimeRemaining(remaining, event.id)
-            }
-            catch (error) {
-                throw error
-            }
-        }) ()
-    }, [event])
+  return (
+    <article className='event-information'>
+      {image && <img src={image} alt={title} />}
+      <div className='event-information-overlay'>
+        <div className='text'>
+          <h3>{title}</h3>
+          <p>
+            <i className="fa-regular fa-calendar fa-bounce"></i> {formattedDate} <br /> {formattedTime}
+          </p>
+        </div>
+      </div>
+    </article>
+  );
+};
 
-    return (
-        <article className='event-information'>
-            <img src={event.image} />
-
-            <div className='event-information-overlay'>
-                <div className='text'>
-                    <h3>{event.title}</h3>
-                    <p><i className="fa-regular fa-calendar fa-bounce"></i> {event.date} <br /> {time}</p>
-                    <p id={`remaining-${event.id}`}>{remaining}</p>
-                </div>
-            </div>
-        </article>
-    )
-}
-
-export default Event
+export default Event;
